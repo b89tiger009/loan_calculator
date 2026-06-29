@@ -144,7 +144,47 @@
         button:hover {
             background-color: #e66400;
         }
+/* 右上角返回門戶按鈕 */
+.btn-portal-back {
+    position: fixed;       /* 改為 fixed 可以確保捲動網頁時，按鈕一直固定在右上角 */
+    top: 20px;
+    right: 20px;
+    width: 46px;
+    height: 46px;
+    background-color: #ffffff;
+    border: 2px solid #007a53; /* 國泰綠 */
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 122, 83, 0.15);
+    transition: all 0.2s ease;
+    text-decoration: none;
+    z-index: 9999;          /* 確保按鈕層級最高，不會被其他網頁元素遮擋 */
+}
 
+/* 漢堡選單的三條橫線 */
+.btn-portal-back .bar {
+    width: 22px;
+    height: 3px;
+    background-color: #007a53; /* 國泰綠 */
+    border-radius: 2px;
+    transition: all 0.2s ease;
+}
+
+/* 滑鼠懸停效果 */
+.btn-portal-back:hover {
+    background-color: #007a53; /* 背景變國泰綠 */
+    box-shadow: 0 4px 14px rgba(0, 122, 83, 0.3);
+    transform: translateY(-2px); /* 輕微往上浮動 */
+}
+
+.btn-portal-back:hover .bar {
+    background-color: #fbc02d; /* 線條變國泰黃 */
+}
         /* 結果區塊 */
         .result-section {
             margin-top: 30px;
