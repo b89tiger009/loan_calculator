@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>貸款還款試算</title>
+    <script>
+        // 【安全防護】嚴格檢查 HTTP 來源網頁 (Referrer) 驗證機制
+        (function() {
+            var allowedReferrer = "https://b89tiger009.github.io/Portal_web_encV2/";
+            var currentReferrer = document.referrer;
+            
+            if (!currentReferrer || currentReferrer.indexOf(allowedReferrer) !== 0) {
+                alert("錯誤：未授權的存取來源！本網頁僅允許從指定門戶網站開啟。\\n\\nUnauthorized Access.");
+                window.location.href = allowedReferrer;
+                throw new Error("Access Denied: Invalid Referrer Source.");
+            }
+        })();
+    </script>
+    <style>
+        :root {
+            --primary-color: #2ca87f;
+            --primary-hover: #238563;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-color: #dddddd;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Helvetica Neue", Helvetica, Arial, "PingFang TC", "Hiragino Sans GB", "Microsoft JhengHei", sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            margin-bottom: 25px;
+            color: #2c3e50;
+            border-left: 5px solid var(--primary-color);
+            padding-left: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #4a5568;
+        }
+
+        .input-group {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="number"]:focus {
+            border-color: var(--primary-color);
+        }
+
+        .unit {
+            position: absolute;
+            right: 12px;
+            color: #718096;
+            pointer-events: none;
+        }
+
+        input {
+            padding-right: 40px !important;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 5px;
+            flex-wrap: wrap;
+        }
+
+        .radio-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            font-weight: normal;
+        }
+
+        .radio-label input {
+            accent-color: var(--primary-color);
+            width: 18px;
+            height: 18px;
+        }
+
+        button {
+            width: 100%;
+            background-color: #ff6f00;
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #e66400;
+        }
+
+        /* 結果區塊 */
+        .result-section {
+            margin-top: 30px;
+            border-top: 2px dashed #e2e8f0;
+            padding-top: 25px;
+            display: none;
+        }
+
+        .result-title {
+            font-size: 20px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .summary-box {
+            background-color: #f0fff4;
+            border: 1px solid #c6f6d5;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .summary-item .label {
+            font-size: 14px;
+            color: #4a5568;
+        }
+
+        .summary-item .value {
+            font-size: 22px;
+            font-weight: bold;
+            color: #22543d;
+            margin-top: 5px;
+        }
+
+        .summary-item .value.highlight {
+            color: #ff6f00;
+        }
+
+        /* 折疊明細區塊 */
+        .details-toggle {
+            background-color: #edf2f7;
+            color: #4a5568;
+            padding: 12px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            border: 1px solid var(--border-color);
+        }
+
+        .details-toggle::after {
+            content: '▼';
+            font-size: 12px;
+            transition: transform 0.3s;
+        }
+
+        .details-toggle.active::after {
+            transform: rotate(180deg);
+        }
+
+        .details-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: #fff;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            margin-top: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: right;
+            font-size: 15px;
+        }
+
+        th, td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #edf2f7;
+        }
+
+        th {
+            background-color: #f7fafc;
+            color: #4a5568;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            box-shadow: 0 1px 0 var(--border-color);
+        }
+
+        tr:hover {
+            background-color: #f8fafc;
+        }
+
+        td:first-child, th:first-child {
+            text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>貸款試算工程機</h2>
+    
+    <div class="form-group">
+        <label>貸款金額</label>
+        <div class="input-group">
+            <input type="number" id="loanAmount" value="800" min="1">
+            <span class="unit">萬元</span>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label>貸款年限</label>
+            <div class="input-group">
+                <input type="number" id="loanYears" value="28" min="1">
+                <span class="unit">年</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>寬限期</label>
+            <div class="input-group">
+                <input type="number" id="graceYears" value="2" min="0">
+                <span class="unit">年</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>年利率</label>
+        <div class="input-group">
+            <input type="number" id="interestRate" value="2.5" step="0.01" min="0">
+            <span class="unit">%</span>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>還款方式</label>
+        <div class="radio-group">
+            <label class="radio-label">
+                <input type="radio" name="repayMethod" value="1" checked> 本息平均攤還
+            </label>
+            <label class="radio-label">
+                <input type="radio" name="repayMethod" value="2"> 本金平均攤還
+            </label>
+            <label class="radio-label">
+                <input type="radio" name="repayMethod" value="3"> 到期還本
+            </label>
+        </div>
+    </div>
+
+    <button onclick="calculateLoan()">開始試算</button>
+
+    <div class="result-section" id="resultSection">
+        <div class="result-title">試算結果</div>
+        
+        <div class="summary-box">
+            <div class="summary-item">
+                <div class="label">貸款總額</div>
+                <div class="value" id="sumLoanAmount">0 元</div>
+            </div>
+            <div class="summary-item">
+                <div class="label">應付總利息</div>
+                <div class="value" id="sumTotalInterest">0 元</div>
+            </div>
+            <div class="summary-item">
+                <div class="label">總還款金額 (本+息)</div>
+                <div class="value highlight" id="sumTotalRepay">0 元</div>
+            </div>
+        </div>
+
+        <div class="details-toggle" id="detailsToggle" onclick="toggleDetails()">
+            <span>檢視每月還款明細</span>
+        </div>
+        
+        <div class="details-content" id="detailsContent">
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 10%;">期數</th>
+                            <th>當期還本金額</th>
+                            <th>當期利息金額</th>
+                            <th>月付本息金額</th>
+                            <th>本金餘額</th>
+                            <th>累計利息</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detailTableBody">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function formatCurrency(num) {
+        return new Intl.NumberFormat('zh-TW', { maximumFractionDigits: 0 }).format(Math.round(num));
+    }
+
+    function toggleDetails() {
+        const toggle = document.getElementById('detailsToggle');
+        const content = document.getElementById('detailsContent');
+        
+        toggle.classList.toggle('active');
+        if (content.style.maxHeight && content.style.maxHeight !== '0px') {
+            content.style.maxHeight = '0px';
+        } else {
+            content.style.maxHeight = '600px'; 
+        }
+    }
+
+    function calculateLoan() {
+        // 讀取輸入數值
+        const loanAmountMn = parseFloat(document.getElementById('loanAmount').value) || 0;
+        const totalYears = parseInt(document.getElementById('loanYears').value) || 0;
+        const graceYears = parseInt(document.getElementById('graceYears').value) || 0;
+        const annualRate = parseFloat(document.getElementById('interestRate').value) || 0;
+        
+        // 【已修正】補上了 [ 符號
+        const repayMethod = document.querySelector('[name="repayMethod"]:checked').value;
+
+        // 單位轉換
+        const principal = loanAmountMn * 10000; // 萬元轉元
+        const totalMonths = totalYears * 12;
+        const graceMonths = graceYears * 12;
+        const monthlyRate = (annualRate / 100) / 12;
+
+        if (principal <= 0 || totalMonths <= 0) {
+            alert('請輸入正確的貸款金額與年限');
+            return;
+        }
+        if (graceMonths >= totalMonths) {
+            alert('寬限期不可大於或等於貸款總年限');
+            return;
+        }
+
+        let remainingPrincipal = principal;
+        let cumulativeInterest = 0;
+        let tableRowsHtml = '';
+
+        const amortizeMonths = totalMonths - graceMonths;
+        let fixedMonthlyRepay = 0;
+        
+        if (repayMethod === "1" && monthlyRate > 0) {
+            fixedMonthlyRepay = principal * (monthlyRate * Math.pow(1 + monthlyRate, amortizeMonths)) / (Math.pow(1 + monthlyRate, amortizeMonths) - 1);
+        } else if (repayMethod === "1" && monthlyRate === 0) {
+            fixedMonthlyRepay = principal / amortizeMonths;
+        }
+
+        for (let month = 1; month <= totalMonths; month++) {
+            let currentInterest = remainingPrincipal * monthlyRate;
+            let currentPrincipalRepay = 0;
+            let currentMonthlyRepay = 0;
+
+            if (month <= graceMonths) {
+                currentPrincipalRepay = 0;
+                currentMonthlyRepay = currentInterest;
+            } else {
+                if (repayMethod === "1") {
+                    currentMonthlyRepay = fixedMonthlyRepay;
+                    currentPrincipalRepay = currentMonthlyRepay - currentInterest;
+                    
+                    if (month === totalMonths) {
+                        currentPrincipalRepay = remainingPrincipal;
+                        currentMonthlyRepay = currentPrincipalRepay + currentInterest;
+                    }
+                } else if (repayMethod === "2") {
+                    currentPrincipalRepay = principal / amortizeMonths;
+                    currentMonthlyRepay = currentPrincipalRepay + currentInterest;
+                    
+                    if (month === totalMonths) {
+                        currentPrincipalRepay = remainingPrincipal;
+                        currentMonthlyRepay = currentPrincipalRepay + currentInterest;
+                    }
+                } else if (repayMethod === "3") {
+                    if (month === totalMonths) {
+                        currentPrincipalRepay = principal;
+                    } else {
+                        currentPrincipalRepay = 0;
+                    }
+                    currentMonthlyRepay = currentPrincipalRepay + currentInterest;
+                }
+            }
+
+            remainingPrincipal -= currentPrincipalRepay;
+            if (remainingPrincipal < 0 || month === totalMonths) {
+                remainingPrincipal = 0; 
+            }
+            cumulativeInterest += currentInterest;
+
+            tableRowsHtml += `<tr>
+                <td>${month}</td>
+                <td>${formatCurrency(currentPrincipalRepay)}</td>
+                <td>${formatCurrency(currentInterest)}</td>
+                <td><strong>${formatCurrency(currentMonthlyRepay)}</strong></td>
+                <td>${formatCurrency(remainingPrincipal)}</td>
+                <td>${formatCurrency(cumulativeInterest)}</td>
+            </tr>`;
+        }
+
+        document.getElementById('sumLoanAmount').innerText = formatCurrency(principal) + ' 元';
+        document.getElementById('sumTotalInterest').innerText = formatCurrency(cumulativeInterest) + ' 元';
+        document.getElementById('sumTotalRepay').innerText = formatCurrency(principal + cumulativeInterest) + ' 元';
+
+        document.getElementById('detailTableBody').innerHTML = tableRowsHtml;
+        document.getElementById('resultSection').style.display = 'block';
+        
+        // 試算完畢後重置明細為收合狀態
+        const toggle = document.getElementById('detailsToggle');
+        const content = document.getElementById('detailsContent');
+        toggle.classList.remove('active');
+        content.style.maxHeight = '0px';
+    }
+</script>
+
+</body>
+</html>
